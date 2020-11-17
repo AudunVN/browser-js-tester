@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Tests</title>
+		
+		<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E🦄%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+		<style>
+			.test-result {
+				display: block;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="report">
+
+		</div>
+
+		<script>
+			let passIcon = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2020%2020'%3E%3Ctext%20x='0'%20y='15'%3E✅%3C/text%3E%3C/svg%3E";
+			let failIcon = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2020%2020'%3E%3Ctext%20x='0'%20y='15'%3E❌%3C/text%3E%3C/svg%3E";
+
+			let report = document.querySelector("#report");
+			
+			report.log = function(message) {
+				let line = document.createElement("span");
+				line.classList.add("test-result");
+				line.textContent = message;
+				this.appendChild(line)
+			}
+
+			document.querySelector("link[rel='icon']").setAttribute("href", passIcon);
+
+			/* based on https://medium.com/javascript-in-plain-english/unit-test-front-end-javascript-code-without-a-framework-8f00c63eb7d4 */
+			
+			function it(description, fn) {
+				try {
+					fn();
+
+					let message = '\u2714 ' + description;
+
+					report.log(message);
+					console.log('\x1b[32m%s\x1b[0m', message);
+				} catch (error) {
+					let message = '\u2718 ' + description;
+
+					report.log(message);
+					console.log('\n');
+					console.log('\x1b[31m%s\x1b[0m', message);
+					console.error(error);
+					document.querySelector("link[rel='icon']").setAttribute("href", failIcon);
+				}
+			}
+
+			function assert(isTrue) {
+				if (!isTrue) {
+					throw new Error();
+				}
+			}
+
+			function loadScripts(scriptUrls, readyFunction) {
+				let loadedScriptCount = 0;
+
+				for (let i = 0; i < scriptUrls.length; i++) {
+					let script = document.createElement('script');
+
+					script.onload = function () {
+						loadedScriptCount++;
+
+						if (loadedScriptCount === scriptUrls.length) {
+							/* all scripts loaded */
+							readyFunction();
+						}
+					};
+					script.src = scriptUrls[i];
+
+					document.head.appendChild(script);
+				}
+			}
+		</script>
+
+		<script src="tests.js"></script>
+	</body>
+</html>

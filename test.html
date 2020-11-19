@@ -22,6 +22,7 @@
 		<style>
 			* {
 				box-sizing: border-box;
+
 				margin: 0;
 				padding: 0;
 			}
@@ -76,6 +77,7 @@
 
 			.details {
 				display: block;
+
 				position: relative;
 				
 				padding-top: 0.5em;
@@ -91,7 +93,6 @@
 				content: "↳";
 
 				position: absolute;
-
 				top: 0.2em;
 				left: 0.25em;
 			}
@@ -144,12 +145,44 @@
 
 			document.querySelector("link[rel='icon']").setAttribute("href", passIcon);
 
-			/* based on https://medium.com/javascript-in-plain-english/unit-test-front-end-javascript-code-without-a-framework-8f00c63eb7d4 */
-			
 			function renderSummary() {
 				document.querySelector("#summary").innerHTML = "Ran " + testCount + " tests in " + (Date.now()-startTime)/1000 + " seconds, " + 
 				passedTestCount + " of " + testCount + " (" + (passedTestCount/testCount*100).toFixed(1) + "%) passed";
 			}
+
+			function loadScriptsAndRunTests(scriptUrls, readyFunction) {
+				let loadedScriptCount = 0;
+
+				if (typeof scriptUrls === "string") {
+					scriptUrls = [scriptUrls];
+				}
+
+				for (let i = 0; i < scriptUrls.length; i++) {
+					let script = document.createElement('script');
+
+					script.onload = function () {
+						loadedScriptCount++;
+
+						if (loadedScriptCount === scriptUrls.length) {
+							/* all scripts loaded */
+							readyFunction();
+						}
+					};
+
+					script.onerror = function (e) {
+						let message = "Could not load script from " + this.src;
+
+						report.log(message, "bad")
+						console.log(message);
+					};
+
+					script.src = scriptUrls[i];
+
+					document.head.appendChild(script);
+				}
+			}
+
+			/* based on https://medium.com/javascript-in-plain-english/unit-test-front-end-javascript-code-without-a-framework-8f00c63eb7d4 */
 
 			function it(description, fn) {
 				testCount++;
@@ -187,38 +220,6 @@
 			function assert(isTrue) {
 				if (!isTrue) {
 					throw new Error(assertionText + " \"" + isTrue + "\"");
-				}
-			}
-
-			function loadScriptsAndRunTests(scriptUrls, readyFunction) {
-				let loadedScriptCount = 0;
-
-				if (typeof scriptUrls === "string") {
-					scriptUrls = [scriptUrls];
-				}
-
-				for (let i = 0; i < scriptUrls.length; i++) {
-					let script = document.createElement('script');
-
-					script.onload = function () {
-						loadedScriptCount++;
-
-						if (loadedScriptCount === scriptUrls.length) {
-							/* all scripts loaded */
-							readyFunction();
-						}
-					};
-
-					script.onerror = function (e) {
-						let message = "Could not load script from " + this.src;
-
-						report.log(message, "bad")
-						console.log(message);
-					};
-
-					script.src = scriptUrls[i];
-
-					document.head.appendChild(script);
 				}
 			}
 		</script>

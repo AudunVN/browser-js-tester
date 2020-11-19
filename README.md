@@ -1,1 +1,2 @@
-# browser-js-test
+# browser-js-tester
+A very small test runner for browser-side JavaScript code. [Opening test.html](https://471.no/browser-js-tester/test.html) in whichever web browser you want runs the tests you've defined in [tests.js](test.js) and prints the results.

@@ -1,66 +1,199 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 	<head>
 		<title>Tests</title>
+
+		<!--
+			v1.0, 2020-11-19
+
+			Latest version at 471.no/browser-js-test/test.html
+
+			Usage: Call loadScriptsAndRunTests(scriptUrls, testRunner) from tests.js.
+			 - scriptUrls is a string or list containing URLs to .js files you wish to use in your tests.
+			 - testRunner is a function containing your tests written using it() and asserts().
+		-->
 		
 		<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E🦄%3C/text%3E%3C/svg%3E" type="image/svg+xml" />
 
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 		<style>
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				padding: 1em;
+
+				font-size: 16px;
+
+				font-family: "Arial", sans-serif;
+				background: #fbfbfb;
+				color: #333333;
+			}
+
+			.dark body{
+				background: #0e0e0e;
+				color: #fbfbfb;
+			}
+
+			h1 {
+				margin-bottom: 0.5rem;
+			}
+
+			h2 {
+				margin-top: 0.5rem;
+				margin-bottom: 0.5rem;
+			}
+
+			#summary {
+				margin-bottom: 1rem;
+			}
+
 			.test-result {
 				display: block;
+			}
+
+			.good {
+				color: #0a9e0a;
+			}
+
+			.dark .good {
+				color: #3fbd3f;
+			}
+
+			.bad {
+				color: #f70505;
+			}
+
+			.dark .bad {
+				color: #fb1e1e;
+			}
+
+			.details {
+				display: block;
+				position: relative;
+				
+				padding-top: 0.5em;
+				padding-left: 1.5em;
+				padding-bottom: 0.25em;
+			}
+
+			.details + .details {
+				padding-top: 0em;
+			}
+
+			.details:before {
+				content: "↳";
+
+				position: absolute;
+
+				top: 0.2em;
+				left: 0.25em;
+			}
+
+			.details + .details:before {
+				top: -0.25em;
 			}
 		</style>
 	</head>
 	<body>
 		<div id="report">
-
+			<h1>Test report</h1>
+			<h2>Summary</h2>
+			<p id="summary">
+				Loading...
+			</p>
+			<h2>Output</h2>
 		</div>
-
+		
 		<script>
 			let passIcon = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2020%2020'%3E%3Ctext%20x='0'%20y='15'%3E✅%3C/text%3E%3C/svg%3E";
 			let failIcon = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2020%2020'%3E%3Ctext%20x='0'%20y='15'%3E❌%3C/text%3E%3C/svg%3E";
+			let assertionText = "Assertion was not true, got";
+
+			let testCount = 0;
+			let failedTestCount = 0;
+			let erroredTestCount = 0;
+			let passedTestCount = 0;
+
+			let startTime = Date.now();
 
 			let report = document.querySelector("#report");
 			
-			report.log = function(message) {
+			report.log = function(message, classList) {
 				let line = document.createElement("span");
+
 				line.classList.add("test-result");
+
+				if (classList) {
+					if (typeof classList === "string") {
+						line.classList.add(classList);
+					} else if (Array.isArray(classList)) {
+						line.classList.add(...classList);
+					}
+				}
+
 				line.textContent = message;
-				this.appendChild(line)
+				this.appendChild(line);
 			}
 
 			document.querySelector("link[rel='icon']").setAttribute("href", passIcon);
 
 			/* based on https://medium.com/javascript-in-plain-english/unit-test-front-end-javascript-code-without-a-framework-8f00c63eb7d4 */
 			
+			function renderSummary() {
+				document.querySelector("#summary").innerHTML = "Ran " + testCount + " tests in " + (Date.now()-startTime)/1000 + " seconds, " + 
+				passedTestCount + " of " + testCount + " (" + (passedTestCount/testCount*100).toFixed(1) + "%) passed";
+			}
+
 			function it(description, fn) {
+				testCount++;
+
 				try {
 					fn();
 
+					passedTestCount++;
+
 					let message = '\u2714 ' + description;
 
-					report.log(message);
+					report.log(message, "good");
 					console.log('\x1b[32m%s\x1b[0m', message);
 				} catch (error) {
-					let message = '\u2718 ' + description;
+					if (error.message.indexOf(assertionText) == -1) {
+						erroredTestCount++;
+					} else {
+						failedTestCount++;
+					}
 
-					report.log(message);
+					let message = '\u2718 ' + description;
+					
+					report.log(message, "bad");
 					console.log('\x1b[31m%s\x1b[0m', message);
+
+					report.log(error, ["bad", "details"]);
 					console.error(error);
+					
 					document.querySelector("link[rel='icon']").setAttribute("href", failIcon);
 				}
+
+				renderSummary();
 			}
 
 			function assert(isTrue) {
 				if (!isTrue) {
-					throw new Error();
+					throw new Error(assertionText + " \"" + isTrue + "\"");
 				}
 			}
 
-			function loadScripts(scriptUrls, readyFunction) {
+			function loadScriptsAndRunTests(scriptUrls, readyFunction) {
 				let loadedScriptCount = 0;
+
+				if (typeof scriptUrls === "string") {
+					scriptUrls = [scriptUrls];
+				}
 
 				for (let i = 0; i < scriptUrls.length; i++) {
 					let script = document.createElement('script');
@@ -73,6 +206,14 @@
 							readyFunction();
 						}
 					};
+
+					script.onerror = function (e) {
+						let message = "Could not load script from " + this.src;
+
+						report.log(message, "bad")
+						console.log(message);
+					};
+
 					script.src = scriptUrls[i];
 
 					document.head.appendChild(script);

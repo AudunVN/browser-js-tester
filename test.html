@@ -115,6 +115,10 @@
 			<p id="test-summary">
 				Loading...
 			</p>
+			<h3>Time</h3>
+			<p id="start-time">
+				Loading...
+			</p>
 			<h3>User Agent</h3>
 			<p id="user-agent">
 				Loading...
@@ -158,6 +162,19 @@
 			function renderSummary() {
 				document.querySelector("#test-summary").innerHTML = "Ran " + testCount + " tests in " + (Date.now()-startTime)/1000 + " seconds, " + 
 				passedTestCount + " of " + testCount + " (" + (passedTestCount/testCount*100).toFixed(1) + "%) passed";
+
+				let d = new Date(startTime);
+				let dateString =
+					d.getUTCFullYear() + "-" +
+					("0" + (d.getUTCMonth()+1)).slice(-2) + "-" +
+					("0" + d.getUTCDate()).slice(-2) + " " +
+					("0" + d.getUTCHours()).slice(-2) + ":" +
+					("0" + d.getUTCMinutes()).slice(-2) + ":" +
+					("0" + d.getUTCSeconds()).slice(-2) +
+					" UTC+0";
+
+				document.querySelector("#start-time").textContent = dateString;
+
 				document.querySelector("#user-agent").textContent = navigator.userAgent;
 			}
 

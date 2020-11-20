@@ -17,3 +17,10 @@ it('should pass', function() {
 it('should fail', function() {
 	assert(1 !== 1);
 });
+
+
+it('should pass after a while', function() {
+	let startTime = Date.now();
+	while (Date.now() < startTime + 471) {}
+	assert(startTime < Date.now());
+});

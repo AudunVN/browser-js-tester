@@ -50,7 +50,7 @@
 				margin-bottom: 0.5rem;
 			}
 
-			h2 {
+			h2, h3 {
 				margin-top: 0.5rem;
 				margin-bottom: 0.5rem;
 			}
@@ -61,6 +61,8 @@
 
 			.test-result {
 				display: block;
+
+				margin-top: 0.25rem;
 			}
 
 			.good {
@@ -110,7 +112,11 @@
 		<div id="report">
 			<h1>Test report</h1>
 			<h2>Summary</h2>
-			<p id="summary">
+			<p id="test-summary">
+				Loading...
+			</p>
+			<h3>User Agent</h3>
+			<p id="user-agent">
 				Loading...
 			</p>
 			<h2>Output</h2>
@@ -150,8 +156,9 @@
 			document.querySelector("link[rel='icon']").setAttribute("href", passIcon);
 
 			function renderSummary() {
-				document.querySelector("#summary").innerHTML = "Ran " + testCount + " tests in " + (Date.now()-startTime)/1000 + " seconds, " + 
+				document.querySelector("#test-summary").innerHTML = "Ran " + testCount + " tests in " + (Date.now()-startTime)/1000 + " seconds, " + 
 				passedTestCount + " of " + testCount + " (" + (passedTestCount/testCount*100).toFixed(1) + "%) passed";
+				document.querySelector("#user-agent").textContent = navigator.userAgent;
 			}
 
 			function loadScriptsAndRunTests(scriptUrls, readyFunction) {
@@ -191,12 +198,14 @@
 			function it(description, fn) {
 				testCount++;
 
+				let startTime = Date.now();
+
 				try {
 					fn();
 
 					passedTestCount++;
 
-					let message = '\u2714 ' + description;
+					let message = '\u2714 ' + description + " (" + (Date.now()-startTime) + " ms)";
 
 					report.log(message, "good");
 					console.log('\x1b[32m%s\x1b[0m', message);
@@ -207,7 +216,7 @@
 						failedTestCount++;
 					}
 
-					let message = '\u2718 ' + description;
+					let message = '\u2718 ' + description + " (" + (Date.now()-startTime) + " ms)";
 					
 					report.log(message, "bad");
 					console.log('\x1b[31m%s\x1b[0m', message);
